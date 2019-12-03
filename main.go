@@ -44,7 +44,7 @@ var (
 func init() {
 	rootCmd.AddCommand(
 		day1.A, day1.B,
-		day2.A,
+		day2.A, day2.B,
 	)
 
 	flags := rootCmd.PersistentFlags()
