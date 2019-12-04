@@ -21,6 +21,11 @@ jobs:
           key: ${{ runner.os }}-build-${{ hashFiles('**/go.sum') }}
 
       - name: Run Tests
-        run: go test -v ./...
+        run: go test -v -covermode atomic -coverprofile=coverage.out ./...
 
-      # TODO: Coverage
+      - name: Coveralls
+        env:
+          - COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          GO111MODULE=off go get github.com/mattn/goveralls
+          $(go env GOPATH)/bin/goveralls -coverprofile=coverage.out -service=github

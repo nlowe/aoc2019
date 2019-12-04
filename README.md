@@ -1,6 +1,6 @@
 # Advent of Code 2019
 
-![](https://github.com/nlowe/aoc2019/workflows/CI/badge.svg) [![Go Report Card](https://goreportcard.com/badge/github.com/nlowe/aoc2019)](https://goreportcard.com/report/github.com/nlowe/aoc2019) [![License](https://img.shields.io/badge/license-MIT-brightgreen)](./LICENSE)
+![](https://github.com/nlowe/aoc2019/workflows/CI/badge.svg) [![Coverage Status](https://coveralls.io/repos/github/nlowe/aoc2019/badge.svg?branch=master)](https://coveralls.io/github/nlowe/aoc2019?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/nlowe/aoc2019)](https://goreportcard.com/report/github.com/nlowe/aoc2019) [![License](https://img.shields.io/badge/license-MIT-brightgreen)](./LICENSE)
 
 Solutions for the 2019 Advent of Code
 
