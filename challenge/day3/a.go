@@ -25,6 +25,14 @@ type segment struct {
 	y2 int
 }
 
+func (s segment) length() int {
+	return ManhattanDistance(s.x1, s.y1, s.x2, s.y2)
+}
+
+func (s segment) partialLength(x, y int) int {
+	return ManhattanDistance(s.x1, s.y1, x, y)
+}
+
 func (s segment) intersection(other segment) (int, int, bool) {
 	sx := float64(s.x2) - float64(s.x1)
 	sy := float64(s.y2) - float64(s.y1)
