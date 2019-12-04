@@ -23,3 +23,21 @@ func TestIsValidPassword(t *testing.T) {
 		})
 	}
 }
+
+func TestRepeatRule(t *testing.T) {
+	tests := []struct {
+		input    int
+		expected bool
+	}{
+		{input: 112233, expected: true},
+		{input: 123444, expected: false},
+		{input: 111122, expected: true},
+		{input: 122333, expected: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(strconv.Itoa(tt.input), func(t *testing.T) {
+			require.Equal(t, tt.expected, repeatRule(tt.input))
+		})
+	}
+}
