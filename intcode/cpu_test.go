@@ -3,10 +3,10 @@ package intcode
 import (
 	"fmt"
 	"strconv"
-	"sync"
 	"testing"
 
 	"github.com/nlowe/aoc2019/intcode/input"
+	"github.com/nlowe/aoc2019/intcode/output"
 	"github.com/stretchr/testify/require"
 )
 
@@ -55,14 +55,8 @@ func TestCPU_Indirection(t *testing.T) {
 }
 
 func TestCPU_IO(t *testing.T) {
-	sut, output := NewCPUForProgram("00003,0,00004,0,99", input.NewFixed(42))
-
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		require.Equal(t, 42, <-output)
-		wg.Done()
-	}()
+	sut, outputs := NewCPUForProgram("00003,0,00004,0,99", input.NewFixed(42))
+	wg := output.Expect(t, outputs, 42)
 
 	sut.Run()
 	wg.Wait()
@@ -86,14 +80,8 @@ func TestCPU_Compare(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s=%d", tt.program, tt.expected), func(t *testing.T) {
-			cpu, output := NewCPUForProgram(tt.program, tt.input)
-
-			wg := sync.WaitGroup{}
-			wg.Add(1)
-			go func() {
-				require.Equal(t, tt.expected, <-output)
-				wg.Done()
-			}()
+			cpu, outputs := NewCPUForProgram(tt.program, tt.input)
+			wg := output.Expect(t, outputs, tt.expected)
 
 			cpu.Run()
 			wg.Wait()
@@ -115,14 +103,8 @@ func TestCPU_Jump(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s=%d", tt.program, tt.expected), func(t *testing.T) {
-			cpu, output := NewCPUForProgram(tt.program, tt.input)
-
-			wg := sync.WaitGroup{}
-			wg.Add(1)
-			go func() {
-				require.Equal(t, tt.expected, <-output)
-				wg.Done()
-			}()
+			cpu, outputs := NewCPUForProgram(tt.program, tt.input)
+			wg := output.Expect(t, outputs, tt.expected)
 
 			cpu.Run()
 			wg.Wait()
@@ -143,14 +125,8 @@ func TestCPU_CmpAndJump(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(strconv.Itoa(tt.expected), func(t *testing.T) {
-			cpu, output := NewCPUForProgram(tt.program, tt.input)
-
-			wg := sync.WaitGroup{}
-			wg.Add(1)
-			go func() {
-				require.Equal(t, tt.expected, <-output)
-				wg.Done()
-			}()
+			cpu, outputs := NewCPUForProgram(tt.program, tt.input)
+			wg := output.Expect(t, outputs, tt.expected)
 
 			cpu.Run()
 			wg.Wait()

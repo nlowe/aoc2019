@@ -2,11 +2,11 @@ package day5
 
 import (
 	"fmt"
-	"sync"
 
 	"github.com/nlowe/aoc2019/challenge"
 	"github.com/nlowe/aoc2019/intcode"
 	"github.com/nlowe/aoc2019/intcode/input"
+	"github.com/nlowe/aoc2019/intcode/output"
 	"github.com/spf13/cobra"
 )
 
@@ -19,19 +19,13 @@ var A = &cobra.Command{
 }
 
 func a(challenge *challenge.Input) int {
-	cpu, output := intcode.NewCPUForProgram(<-challenge.Lines(), input.NewFixed(1))
+	cpu, outputs := intcode.NewCPUForProgram(<-challenge.Lines(), input.NewFixed(1))
 
 	lastCode := 0
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		for code := range output {
-			fmt.Printf("output: %d\n", code)
-			lastCode = code
-		}
-
-		wg.Done()
-	}()
+	wg := output.Each(outputs, func(code int) {
+		fmt.Printf("output: %d\n", code)
+		lastCode = code
+	})
 
 	cpu.Run()
 	wg.Wait()
