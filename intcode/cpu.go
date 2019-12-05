@@ -25,9 +25,9 @@ const (
 type CPU struct {
 	Memory []int
 
-	inputs  <-chan int
-	outputs chan<- int
-	pc      int
+	input  <-chan int
+	output chan<- int
+	pc     int
 }
 
 func NewCPUForProgram(program string, inputs <-chan int) (*CPU, <-chan int) {
@@ -39,7 +39,7 @@ func NewCPUForProgram(program string, inputs <-chan int) (*CPU, <-chan int) {
 	}
 
 	output := make(chan int)
-	return &CPU{Memory: memory, inputs: inputs, outputs: output}, output
+	return &CPU{Memory: memory, input: inputs, output: output}, output
 }
 
 func (c *CPU) Run() {
@@ -47,62 +47,62 @@ func (c *CPU) Run() {
 		c.Step()
 	}
 
-	close(c.outputs)
+	close(c.output)
 }
 
 func (c *CPU) Step() {
 	m3, m2, m1, op := c.parseOp()
 	switch op {
 	case OpAdd:
-		c.write(m3, c.Memory[c.pc+3], c.read(m1, c.Memory[c.pc+1])+c.read(m2, c.Memory[c.pc+2]))
+		c.write(m3, 3, c.read(m1, 1)+c.read(m2, 2))
 		c.pc += 4
 	case OpMul:
-		c.write(m3, c.Memory[c.pc+3], c.read(m1, c.Memory[c.pc+1])*c.read(m2, c.Memory[c.pc+2]))
+		c.write(m3, 3, c.read(m1, 1)*c.read(m2, 2))
 		c.pc += 4
 	case OpIn:
 		select {
-		case v := <-c.inputs:
-			c.write(m1, c.Memory[c.pc+1], v)
+		case v := <-c.input:
+			c.write(m1, 1, v)
 			c.pc += 2
 		default:
-			c.hcf("no more input remaining")
+			panic(fmt.Sprintf("no more input remaining %s", c.debugState()))
 		}
 	case OpOut:
-		c.outputs <- c.read(m1, c.Memory[c.pc+1])
+		c.output <- c.read(m1, 1)
 		c.pc += 2
 	case OpJT:
-		if c.read(m1, c.Memory[c.pc+1]) != 0 {
-			c.pc = c.read(m2, c.Memory[c.pc+2])
+		if c.read(m1, 1) != 0 {
+			c.pc = c.read(m2, 2)
 		} else {
 			c.pc += 3
 		}
 	case OpJF:
-		if c.read(m1, c.Memory[c.pc+1]) == 0 {
-			c.pc = c.read(m2, c.Memory[c.pc+2])
+		if c.read(m1, 1) == 0 {
+			c.pc = c.read(m2, 2)
 		} else {
 			c.pc += 3
 		}
 	case OpLT:
-		if c.read(m1, c.Memory[c.pc+1]) < c.read(m2, c.Memory[c.pc+2]) {
-			c.write(m3, c.Memory[c.pc+3], 1)
+		if c.read(m1, 1) < c.read(m2, 2) {
+			c.write(m3, 3, 1)
 		} else {
-			c.write(m3, c.Memory[c.pc+3], 0)
+			c.write(m3, 3, 0)
 		}
 
 		c.pc += 4
 	case OpEQ:
-		if c.read(m1, c.Memory[c.pc+1]) == c.read(m2, c.Memory[c.pc+2]) {
-			c.write(m3, c.Memory[c.pc+3], 1)
+		if c.read(m1, 1) == c.read(m2, 2) {
+			c.write(m3, 3, 1)
 		} else {
-			c.write(m3, c.Memory[c.pc+3], 0)
+			c.write(m3, 3, 0)
 		}
 
 		c.pc += 4
 	case OpHalt:
-		close(c.outputs)
+		close(c.output)
 		return
 	default:
-		c.hcf("unknown opcode")
+		panic(fmt.Sprintf("unknown opcode %s", c.debugState()))
 	}
 }
 
@@ -112,33 +112,30 @@ func (c *CPU) parseOp() (int, int, int, int) {
 	return op / 10000, (op / 1000) % 10, (op / 100) % 10, op % 100
 }
 
-func (c *CPU) read(mode, target int) int {
+func (c *CPU) read(mode, offset int) int {
 	switch mode {
 	case ModeIndirect:
-		return c.Memory[target]
+		return c.Memory[c.Memory[c.pc+offset]]
 	case ModeImmediate:
-		return target
+		return c.Memory[c.pc+offset]
 	default:
-		c.hcf(fmt.Sprintf("read: unknown mode: %d", mode))
-		// c.hcf always panics, this is just to satisfy the compiler
-		panic(nil)
+		panic(fmt.Sprintf("read: unknown mode: %d %s", mode, c.debugState()))
 	}
 }
 
-func (c *CPU) write(mode, target, value int) {
+func (c *CPU) write(mode, offset, value int) {
 	switch mode {
 	case ModeIndirect:
-		c.Memory[target] = value
+		c.Memory[c.Memory[c.pc+offset]] = value
 	case ModeImmediate:
-		c.hcf(fmt.Sprintf("write: unsupported mode: Immediate"))
+		panic(fmt.Sprintf("write: unsupported mode: Immediate %s", c.debugState()))
 	default:
-		c.hcf(fmt.Sprintf("write: unknown mode: %d", mode))
+		panic(fmt.Sprintf("write: unknown mode: %d %s", mode, c.debugState()))
 	}
 }
 
-func (c *CPU) hcf(msg string) {
-	close(c.outputs)
-	panic(fmt.Sprintf("%s [Op: %05d, PC: %d] (Memory: %+v)", msg, c.Memory[c.pc], c.pc, c.Memory))
+func (c *CPU) debugState() string {
+	return fmt.Sprintf("[Op: %05d, PC: %d] (Memory: %+v)", c.Memory[c.pc], c.pc, c.Memory)
 }
 
 func (c *CPU) IsHalted() bool {
