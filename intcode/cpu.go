@@ -42,6 +42,8 @@ func (c *CPU) Run() {
 	for !c.IsHalted() {
 		c.Step()
 	}
+
+	close(c.outputs)
 }
 
 func (c *CPU) Step() {
@@ -103,6 +105,7 @@ func (c *CPU) write(mode, target, value int) {
 }
 
 func (c *CPU) hcf(msg string) {
+	close(c.outputs)
 	panic(fmt.Sprintf("%s [Op: %05d, PC: %d] (Memory: %+v)", msg, c.Memory[c.pc], c.pc, c.Memory))
 }
 
