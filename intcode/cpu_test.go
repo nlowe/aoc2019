@@ -1,12 +1,14 @@
-package day2
+package intcode
 
 import (
+	"sync"
 	"testing"
 
+	"github.com/nlowe/aoc2019/intcode/input"
 	"github.com/stretchr/testify/require"
 )
 
-func TestCPU(t *testing.T) {
+func TestCPU_BasicOpCodes(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected []int
@@ -35,10 +37,31 @@ func TestCPU(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
-			sut := NewCPUForProgram(tt.input)
+			sut, _ := NewCPUForProgram(tt.input, nil)
 			sut.Run()
 
 			require.Equal(t, tt.expected, sut.Memory)
 		})
 	}
+}
+
+func TestCPU_Indirection(t *testing.T) {
+	sut, _ := NewCPUForProgram("01101,4,1,0,99", nil)
+	sut.Run()
+
+	require.Equal(t, []int{5, 4, 1, 0, 99}, sut.Memory)
+}
+
+func TestCPU_IO(t *testing.T) {
+	sut, output := NewCPUForProgram("00003,0,00004,0,99", input.NewFixed(42))
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		require.Equal(t, 42, <-output)
+		wg.Done()
+	}()
+
+	sut.Run()
+	wg.Wait()
 }

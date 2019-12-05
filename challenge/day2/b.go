@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/nlowe/aoc2019/challenge"
+	"github.com/nlowe/aoc2019/intcode"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +25,7 @@ func b(input *challenge.Input) int {
 
 	for verb := 0; verb <= 99; verb++ {
 		for noun := 0; noun <= 99; noun++ {
-			cpu := NewCPUForProgram(patch(program, verb, noun))
+			cpu, _ := intcode.NewCPUForProgram(patch(program, verb, noun), nil)
 
 			cpu.Run()
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/nlowe/aoc2019/challenge"
+	"github.com/nlowe/aoc2019/intcode"
 	"github.com/spf13/cobra"
 )
 
@@ -16,7 +17,7 @@ var A = &cobra.Command{
 }
 
 func a(input *challenge.Input) int {
-	cpu := NewCPUForProgram(<-input.Lines())
+	cpu, _ := intcode.NewCPUForProgram(<-input.Lines(), nil)
 
 	cpu.Memory[1] = 12
 	cpu.Memory[2] = 2
