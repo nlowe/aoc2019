@@ -12,6 +12,10 @@ const (
 	OpMul  = 2
 	OpIn   = 3
 	OpOut  = 4
+	OpJT   = 5
+	OpJF   = 6
+	OpLT   = 7
+	OpEQ   = 8
 	OpHalt = 99
 
 	ModeIndirect  = 0
@@ -66,6 +70,34 @@ func (c *CPU) Step() {
 	case OpOut:
 		c.outputs <- c.read(m1, c.Memory[c.pc+1])
 		c.pc += 2
+	case OpJT:
+		if c.read(m1, c.Memory[c.pc+1]) != 0 {
+			c.pc = c.read(m2, c.Memory[c.pc+2])
+		} else {
+			c.pc += 3
+		}
+	case OpJF:
+		if c.read(m1, c.Memory[c.pc+1]) == 0 {
+			c.pc = c.read(m2, c.Memory[c.pc+2])
+		} else {
+			c.pc += 3
+		}
+	case OpLT:
+		if c.read(m1, c.Memory[c.pc+1]) < c.read(m2, c.Memory[c.pc+2]) {
+			c.write(m3, c.Memory[c.pc+3], 1)
+		} else {
+			c.write(m3, c.Memory[c.pc+3], 0)
+		}
+
+		c.pc += 4
+	case OpEQ:
+		if c.read(m1, c.Memory[c.pc+1]) == c.read(m2, c.Memory[c.pc+2]) {
+			c.write(m3, c.Memory[c.pc+3], 1)
+		} else {
+			c.write(m3, c.Memory[c.pc+3], 0)
+		}
+
+		c.pc += 4
 	case OpHalt:
 		close(c.outputs)
 		return
