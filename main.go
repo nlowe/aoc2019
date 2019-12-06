@@ -9,6 +9,7 @@ import (
 	"github.com/nlowe/aoc2019/challenge/day3"
 	"github.com/nlowe/aoc2019/challenge/day4"
 	"github.com/nlowe/aoc2019/challenge/day5"
+	"github.com/nlowe/aoc2019/challenge/day6"
 	"github.com/pkg/profile"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -51,6 +52,7 @@ func init() {
 		day3.A, day3.B,
 		day4.A, day4.B,
 		day5.A, day5.B,
+		day6.A,
 	)
 
 	flags := rootCmd.PersistentFlags()
