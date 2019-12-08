@@ -2,6 +2,7 @@ package day7
 
 import (
 	"fmt"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,14 +16,20 @@ func TestPermute(t *testing.T) {
 	permutations := make(chan []int)
 
 	var generated [][]int
+	wg := sync.WaitGroup{}
+	wg.Add(1)
 	go func() {
 		for p := range permutations {
 			fmt.Printf("got %+v\n", p)
 			generated = append(generated, p)
 		}
+
+		wg.Done()
 	}()
 
 	permute(len(sut), sut, permutations)
+	close(permutations)
+	wg.Wait()
 
 	require.Len(t, generated, 3*2*1)
 	assert.Contains(t, generated, []int{0, 1, 2})
