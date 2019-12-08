@@ -4,35 +4,39 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/nlowe/aoc2019/challenge"
 	"github.com/nlowe/aoc2019/intcode"
 	"github.com/nlowe/aoc2019/intcode/input"
 	"github.com/nlowe/aoc2019/intcode/output"
-
-	"github.com/nlowe/aoc2019/challenge"
 	"github.com/spf13/cobra"
 )
 
-var A = &cobra.Command{
-	Use:   "7a",
-	Short: "Day 7, Problem A",
+var B = &cobra.Command{
+	Use:   "7b",
+	Short: "Day 7, Problem B",
 	Run: func(_ *cobra.Command, _ []string) {
-		fmt.Printf("Answer: %d\n", a(challenge.FromFile()))
+		fmt.Printf("Answer: %d\n", b(challenge.FromFile()))
 	},
 }
 
-func a(challenge *challenge.Input) int {
+func b(challenge *challenge.Input) int {
 	program := <-challenge.Lines()
 
 	bestValue := 0
-	for settings := range phaseGenerator([]int{0, 1, 2, 3, 4}) {
-		a, aOut := intcode.NewCPUForProgram(program, input.Prefix(settings[0], input.NewFixed(0)))
+	for settings := range phaseGenerator([]int{5, 6, 7, 8, 9}) {
+		feedback := make(chan int)
+
+		a, aOut := intcode.NewCPUForProgram(program, input.Prefix(settings[0], input.Prefix(0, feedback)))
 		b, bOut := intcode.NewCPUForProgram(program, input.Prefix(settings[1], aOut))
 		c, cOut := intcode.NewCPUForProgram(program, input.Prefix(settings[2], bOut))
 		d, dOut := intcode.NewCPUForProgram(program, input.Prefix(settings[3], cOut))
 		e, eOut := intcode.NewCPUForProgram(program, input.Prefix(settings[4], dOut))
 
 		thrusterValue := 0
-		t := output.Single(eOut, &thrusterValue)
+		t := output.Each(eOut, func(v int) {
+			thrusterValue = v
+			feedback <- v
+		})
 
 		wg := sync.WaitGroup{}
 		wg.Add(5)
@@ -45,6 +49,7 @@ func a(challenge *challenge.Input) int {
 
 		t.Wait()
 		wg.Wait()
+		close(feedback)
 
 		if thrusterValue > bestValue {
 			fmt.Printf("New Best thruster value: %d, Phases: %+v\n", thrusterValue, settings)
@@ -53,34 +58,4 @@ func a(challenge *challenge.Input) int {
 	}
 
 	return bestValue
-}
-
-// Generate all possible phases using Heap's algorithm
-func phaseGenerator(phases []int) <-chan []int {
-	result := make(chan []int)
-
-	go func() {
-		permute(5, phases, result)
-		close(result)
-	}()
-	return result
-}
-
-func permute(n int, input []int, output chan<- []int) {
-	if n == 1 {
-		v := make([]int, len(input))
-		copy(v, input)
-		output <- v
-		return
-	}
-
-	for i := 0; i < n; i++ {
-		permute(n-1, input, output)
-
-		if n%2 == 0 {
-			input[i], input[n-1] = input[n-1], input[i]
-		} else {
-			input[0], input[n-1] = input[n-1], input[0]
-		}
-	}
 }

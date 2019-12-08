@@ -9,6 +9,7 @@ import (
 
 func Each(outputs <-chan int, cb func(int)) *sync.WaitGroup {
 	wg := &sync.WaitGroup{}
+	wg.Add(1)
 
 	go func() {
 		for code := range outputs {
