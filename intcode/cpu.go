@@ -3,6 +3,7 @@ package intcode
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/nlowe/aoc2019/util"
 )
@@ -64,8 +65,8 @@ func (c *CPU) Step() {
 		case v := <-c.input:
 			c.write(m1, 1, v)
 			c.pc += 2
-		default:
-			panic(fmt.Sprintf("no more input remaining %s", c.debugState()))
+		case <-time.After(5 * time.Second):
+			panic(fmt.Sprintf("no more input remaining after 5 seconds %s", c.debugState()))
 		}
 	case OpOut:
 		c.output <- c.read(m1, 1)
