@@ -23,7 +23,7 @@ import (
 )
 
 var {{ .AB }} = &cobra.Command{
-    Use:   "{{ .N }}{{ .AB }}",
+    Use:   "{{ .N }}{{ .AB | toLower }}",
     Short: "Day {{ .N }}, Problem {{ .AB }}",
     Run: func(_ *cobra.Command, _ []string) {
         fmt.Printf("Answer: %d\n", {{ .AB | toLower }}(challenge.FromFile()))
