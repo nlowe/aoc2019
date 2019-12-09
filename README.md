@@ -25,6 +25,17 @@ Answer: 9633
 Took 999.4µs
 ```
 
+## Adding New Solutions
+
+A generator program is included in `gen/problem.go` that makes templates for each day. For
+example, `go run gen/problem.go 9 a` will generate the following files:
+
+* `challenge/day9/a.go`: The main problem implementation, containing a cobra command `A` and the implementation `func a(*challenge.Input) int`
+* `challenge/day9/a_test.go`: A basic test template
+* `challenge/day9/input.txt`: The challenge input
+
+I don't yet have a way to register the cobra command in `main.go` automatically.
+
 ## License
 
 These solutions are licensed under the MIT License.
