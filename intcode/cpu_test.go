@@ -42,7 +42,7 @@ func TestCPU_BasicOpCodes(t *testing.T) {
 			sut, _ := NewCPUForProgram(tt.input, nil)
 			sut.Run()
 
-			require.Equal(t, tt.expected, sut.Memory)
+			require.Equal(t, tt.expected, sut.Memory[:len(tt.expected)])
 		})
 	}
 }
@@ -51,7 +51,7 @@ func TestCPU_Indirection(t *testing.T) {
 	sut, _ := NewCPUForProgram("01101,4,1,0,99", nil)
 	sut.Run()
 
-	require.Equal(t, []int{5, 4, 1, 0, 99}, sut.Memory)
+	require.Equal(t, []int{5, 4, 1, 0, 99}, sut.Memory[:5])
 }
 
 func TestCPU_IO(t *testing.T) {
@@ -130,6 +130,33 @@ func TestCPU_CmpAndJump(t *testing.T) {
 
 			cpu.Run()
 			wg.Wait()
+		})
+	}
+}
+
+func TestCPU_RelativeMode(t *testing.T) {
+	tests := []struct {
+		program  string
+		expected []int
+	}{
+		{program: "109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99", expected: []int{109, 1, 204, -1, 1001, 100, 1, 100, 1008, 100, 16, 101, 1006, 101, 0, 99}},
+		{program: "1102,34915192,34915192,7,4,7,99,0", expected: []int{1219070632396864}},
+		{program: "104,1125899906842624,99", expected: []int{1125899906842624}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.program, func(t *testing.T) {
+			cpu, outputs := NewCPUForProgram(tt.program, nil)
+
+			var recorded []int
+			wg := output.Each(outputs, func(v int) {
+				recorded = append(recorded, v)
+			})
+
+			cpu.Run()
+			wg.Wait()
+
+			require.Equal(t, tt.expected, recorded)
 		})
 	}
 }

@@ -17,10 +17,14 @@ const (
 	OpJF   = 6
 	OpLT   = 7
 	OpEQ   = 8
+	OpRel  = 9
 	OpHalt = 99
 
 	ModeIndirect  = 0
 	ModeImmediate = 1
+	ModeRelative  = 2
+
+	RAMSize = 8192
 )
 
 type CPU struct {
@@ -28,12 +32,14 @@ type CPU struct {
 
 	input  <-chan int
 	output chan<- int
-	pc     int
+
+	pc             int
+	relativeOffset int
 }
 
 func NewCPUForProgram(program string, inputs <-chan int) (*CPU, <-chan int) {
 	parts := strings.Split(program, ",")
-	memory := make([]int, len(parts))
+	memory := make([]int, RAMSize)
 
 	for i, op := range parts {
 		memory[i] = util.MustAtoI(op)
@@ -99,6 +105,11 @@ func (c *CPU) Step() {
 		}
 
 		c.pc += 4
+	case OpRel:
+		adj := c.read(m1, 1)
+		c.relativeOffset += adj
+
+		c.pc += 2
 	case OpHalt:
 		close(c.output)
 		return
@@ -119,6 +130,8 @@ func (c *CPU) read(mode, offset int) int {
 		return c.Memory[c.Memory[c.pc+offset]]
 	case ModeImmediate:
 		return c.Memory[c.pc+offset]
+	case ModeRelative:
+		return c.Memory[c.relativeOffset+c.Memory[c.pc+offset]]
 	default:
 		panic(fmt.Sprintf("read: unknown mode: %d %s", mode, c.debugState()))
 	}
@@ -130,6 +143,8 @@ func (c *CPU) write(mode, offset, value int) {
 		c.Memory[c.Memory[c.pc+offset]] = value
 	case ModeImmediate:
 		panic(fmt.Sprintf("write: unsupported mode: Immediate %s", c.debugState()))
+	case ModeRelative:
+		c.Memory[c.relativeOffset+c.Memory[c.pc+offset]] = value
 	default:
 		panic(fmt.Sprintf("write: unknown mode: %d %s", mode, c.debugState()))
 	}
