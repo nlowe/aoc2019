@@ -3,23 +3,11 @@ package intcode
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/nlowe/aoc2019/util"
 )
 
 const (
-	OpAdd  = 1
-	OpMul  = 2
-	OpIn   = 3
-	OpOut  = 4
-	OpJT   = 5
-	OpJF   = 6
-	OpLT   = 7
-	OpEQ   = 8
-	OpRel  = 9
-	OpHalt = 99
-
 	ModeIndirect  = 0
 	ModeImmediate = 1
 	ModeRelative  = 2
@@ -59,63 +47,12 @@ func (c *CPU) Run() {
 
 func (c *CPU) Step() {
 	m3, m2, m1, op := c.parseOp()
-	switch op {
-	case OpAdd:
-		c.write(m3, 3, c.read(m1, 1)+c.read(m2, 2))
-		c.pc += 4
-	case OpMul:
-		c.write(m3, 3, c.read(m1, 1)*c.read(m2, 2))
-		c.pc += 4
-	case OpIn:
-		select {
-		case v := <-c.input:
-			c.write(m1, 1, v)
-			c.pc += 2
-		case <-time.After(5 * time.Second):
-			panic(fmt.Sprintf("no more input remaining after 5 seconds %s", c.debugState()))
-		}
-	case OpOut:
-		c.output <- c.read(m1, 1)
-		c.pc += 2
-	case OpJT:
-		if c.read(m1, 1) != 0 {
-			c.pc = c.read(m2, 2)
-		} else {
-			c.pc += 3
-		}
-	case OpJF:
-		if c.read(m1, 1) == 0 {
-			c.pc = c.read(m2, 2)
-		} else {
-			c.pc += 3
-		}
-	case OpLT:
-		if c.read(m1, 1) < c.read(m2, 2) {
-			c.write(m3, 3, 1)
-		} else {
-			c.write(m3, 3, 0)
-		}
-
-		c.pc += 4
-	case OpEQ:
-		if c.read(m1, 1) == c.read(m2, 2) {
-			c.write(m3, 3, 1)
-		} else {
-			c.write(m3, 3, 0)
-		}
-
-		c.pc += 4
-	case OpRel:
-		adj := c.read(m1, 1)
-		c.relativeOffset += adj
-
-		c.pc += 2
-	case OpHalt:
-		close(c.output)
-		return
-	default:
+	impl, ok := opTable[op]
+	if !ok {
 		panic(fmt.Sprintf("unknown opcode %s", c.debugState()))
 	}
+
+	c.pc += impl(m3, m2, m1, c)
 }
 
 func (c *CPU) parseOp() (int, int, int, int) {
