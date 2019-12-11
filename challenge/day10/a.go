@@ -27,6 +27,16 @@ func (a asteroid) distanceTo(other asteroid) float64 {
 	return math.Sqrt(math.Pow(a.x-other.x, 2) + math.Pow(a.y-other.y, 2))
 }
 
+func (a asteroid) angleTo(other asteroid) float64 {
+	theta := math.Atan2(other.x-a.x, a.y-other.y)
+
+	if theta < 0 {
+		return theta + 2*math.Pi
+	}
+
+	return theta
+}
+
 func (a asteroid) slopeTo(other asteroid) float64 {
 	if a.y == other.y {
 		return math.Inf(1)
@@ -62,21 +72,29 @@ func (a asteroid) canSee(other asteroid, all []asteroid) bool {
 func a(challenge *challenge.Input) int {
 	asteroids := makeMap(challenge)
 
-	best := 0
+	_, result, _ := findStation(asteroids)
+	return result
+}
+
+func findStation(asteroids []asteroid) (station asteroid, best int, targets []asteroid) {
 	for _, a := range asteroids {
 		seen := 0
+		var inSight []asteroid
 		for _, other := range asteroids {
 			if a.canSee(other, asteroids) {
+				inSight = append(inSight, other)
 				seen++
 			}
 		}
 
 		if seen > best {
+			station = a
 			best = seen
+			targets = inSight
 		}
 	}
 
-	return best
+	return
 }
 
 func makeMap(challenge *challenge.Input) []asteroid {
