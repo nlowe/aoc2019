@@ -4,24 +4,18 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nlowe/aoc2019/challenge/day12"
-
-	"github.com/nlowe/aoc2019/challenge/day11"
-
-	"github.com/nlowe/aoc2019/challenge/day10"
-
-	"github.com/nlowe/aoc2019/challenge/day9"
-
-	"github.com/nlowe/aoc2019/challenge/day8"
-
-	"github.com/nlowe/aoc2019/challenge/day7"
-
 	"github.com/nlowe/aoc2019/challenge/day1"
+	"github.com/nlowe/aoc2019/challenge/day10"
+	"github.com/nlowe/aoc2019/challenge/day11"
+	"github.com/nlowe/aoc2019/challenge/day12"
 	"github.com/nlowe/aoc2019/challenge/day2"
 	"github.com/nlowe/aoc2019/challenge/day3"
 	"github.com/nlowe/aoc2019/challenge/day4"
 	"github.com/nlowe/aoc2019/challenge/day5"
 	"github.com/nlowe/aoc2019/challenge/day6"
+	"github.com/nlowe/aoc2019/challenge/day7"
+	"github.com/nlowe/aoc2019/challenge/day8"
+	"github.com/nlowe/aoc2019/challenge/day9"
 	"github.com/pkg/profile"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -70,7 +64,7 @@ func init() {
 		day9.A, day9.B,
 		day10.A, day10.B,
 		day11.A, day11.B,
-		day12.A,
+		day12.A, day12.B,
 	)
 
 	flags := rootCmd.PersistentFlags()
