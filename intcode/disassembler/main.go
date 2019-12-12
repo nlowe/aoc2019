@@ -20,7 +20,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	f, err := ioutil.ReadFile(os.Args[1])
+	var f []byte
+	var err error
+
+	if os.Args[1] == "-" {
+		f, err = ioutil.ReadAll(os.Stdin)
+	} else {
+		f, err = ioutil.ReadFile(os.Args[1])
+	}
+
 	if err != nil {
 		panic(err)
 	}
