@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/nlowe/aoc2019/intcode/instruction"
 	"github.com/nlowe/aoc2019/util"
 )
 
@@ -46,19 +47,13 @@ func (c *CPU) Run() {
 }
 
 func (c *CPU) Step() {
-	m3, m2, m1, op := c.parseOp()
-	impl, ok := opTable[op]
+	m3, m2, m1, op := instruction.Parse(c.Memory[c.pc])
+	impl, ok := microcode[op]
 	if !ok {
 		panic(fmt.Sprintf("unknown opcode %s", c.debugState()))
 	}
 
 	c.pc += impl(m3, m2, m1, c)
-}
-
-func (c *CPU) parseOp() (int, int, int, int) {
-	op := c.Memory[c.pc]
-
-	return op / 10000, (op / 1000) % 10, (op / 100) % 10, op % 100
 }
 
 func (c *CPU) read(mode, offset int) int {
@@ -92,5 +87,5 @@ func (c *CPU) debugState() string {
 }
 
 func (c *CPU) IsHalted() bool {
-	return c.Memory[c.pc] == OpHalt
+	return c.Memory[c.pc] == instruction.Halt
 }
