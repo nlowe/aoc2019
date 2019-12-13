@@ -19,6 +19,11 @@ var microcode = map[int]opFunc{
 		return 1 + instruction.ArgCount(instruction.Mul)
 	},
 	instruction.In: func(m3, m2, m1 int, c *CPU) int {
+		if c.floatingInput != nil {
+			c.write(m1, 1, c.floatingInput())
+			return 1 + instruction.ArgCount(instruction.In)
+		}
+
 		select {
 		case v := <-c.input:
 			c.write(m1, 1, v)

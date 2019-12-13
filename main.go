@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/nlowe/aoc2019/challenge/day13"
+
 	"github.com/nlowe/aoc2019/challenge/day1"
 	"github.com/nlowe/aoc2019/challenge/day10"
 	"github.com/nlowe/aoc2019/challenge/day11"
@@ -65,6 +67,7 @@ func init() {
 		day10.A, day10.B,
 		day11.A, day11.B,
 		day12.A, day12.B,
+		day13.A, day13.B,
 	)
 
 	flags := rootCmd.PersistentFlags()

@@ -3,6 +3,7 @@ module github.com/nlowe/aoc2019
 go 1.13
 
 require (
+	github.com/gdamore/tcell v1.3.0
 	github.com/go-sqlite/sqlite3 v0.0.0-20180313105335-53dd8e640ee7 // indirect
 	github.com/gonuts/binary v0.2.0 // indirect
 	github.com/keybase/go-keychain v0.0.0-20191114153608-ccd67945d59e // indirect
