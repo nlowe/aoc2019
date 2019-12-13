@@ -178,6 +178,11 @@ func getInput(day int) ([]byte, error) {
 	}
 	defer mustClose(resp.Body)
 
+	if resp.StatusCode != http.StatusOK {
+		body, _ := ioutil.ReadAll(resp.Body)
+		return nil, fmt.Errorf("unexpected status code %s: %s", resp.Status, body)
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	return body, err
 }
