@@ -31,7 +31,7 @@ func b(challenge *challenge.Input) int {
 	cpu, out := intcode.NewCPUForProgram(<-challenge.Lines(), nil)
 	cpu.Memory[0] = 2
 
-	// TODO: Is there a way to keep input and output challens in sync wihtout this hack?
+	// TODO: Is there a way to keep input and output channels in sync wihtout this hack?
 	cpu.UseFloatingInput(func() int {
 		return joystick
 	})
