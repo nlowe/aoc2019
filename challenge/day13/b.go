@@ -82,10 +82,15 @@ func b(challenge *challenge.Input) int {
 
 		if x == -1 && y == 0 {
 			score = tile
+			scoreString := fmt.Sprintf("Score: %d", score)
+			for i, r := range scoreString {
+				term.SetContent(i, 0, r, nil, tcell.StyleDefault)
+			}
 		} else {
+			r := ' '
 			switch tile {
 			case tileBlock:
-				term.SetContent(x, y, tcell.RuneBlock, nil, tcell.StyleDefault)
+				r = tcell.RuneBlock
 			case tileBall:
 				bx = x
 				if bx < px {
@@ -96,15 +101,15 @@ func b(challenge *challenge.Input) int {
 					joystick <- positionNeutral
 				}
 
-				term.SetContent(x, y, '0', nil, tcell.StyleDefault)
+				r = '0'
 			case tileHorizontalPaddle:
 				px = x
-				term.SetContent(x, y, '\u2582', nil, tcell.StyleDefault)
+				r = '\u2582'
 			case tileWall:
-				term.SetContent(x, y, '=', nil, tcell.StyleDefault)
-			case tileEmpty:
-				term.SetContent(x, y, ' ', nil, tcell.StyleDefault)
+				r = '='
 			}
+
+			term.SetContent(x, 1+y, r, nil, tcell.StyleDefault)
 
 			if !headless {
 				term.Show()
