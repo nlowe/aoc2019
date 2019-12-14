@@ -19,11 +19,6 @@ var microcode = map[int]opFunc{
 		return 1 + instruction.ArgCount(instruction.Mul)
 	},
 	instruction.In: func(m3, m2, m1 int, c *CPU) int {
-		if c.floatingInput != nil {
-			c.write(m1, 1, c.floatingInput())
-			return 1 + instruction.ArgCount(instruction.In)
-		}
-
 		select {
 		case v := <-c.input:
 			c.write(m1, 1, v)
@@ -33,7 +28,11 @@ var microcode = map[int]opFunc{
 		}
 	},
 	instruction.Out: func(m3, m2, m1 int, c *CPU) int {
-		c.output <- c.read(m1, 1)
+		select {
+		case c.output <- c.read(m1, 1):
+		case <-time.After(5 * time.Second):
+			panic(fmt.Sprintf("blocked on write for 5 seconds %s", c.debugState()))
+		}
 		return 1 + instruction.ArgCount(instruction.Out)
 	},
 	instruction.JT: func(m3, m2, m1 int, c *CPU) int {

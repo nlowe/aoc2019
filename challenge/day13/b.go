@@ -2,14 +2,12 @@ package day13
 
 import (
 	"fmt"
-	"math"
 
 	"github.com/gdamore/tcell"
-
-	"github.com/nlowe/aoc2019/intcode"
-
 	"github.com/nlowe/aoc2019/challenge"
+	"github.com/nlowe/aoc2019/intcode"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -26,29 +24,41 @@ var B = &cobra.Command{
 	},
 }
 
+func init() {
+	flags := B.Flags()
+
+	flags.Bool("headless", false, "Run without rendering the game")
+
+	if err := viper.BindPFlags(flags); err != nil {
+		panic(err)
+	}
+}
+
 func b(challenge *challenge.Input) int {
-	joystick := positionNeutral
-	cpu, out := intcode.NewCPUForProgram(<-challenge.Lines(), nil)
+	// This needs to be buffered because the game doesn't read the paddle state
+	// immediately after rendering the ball (it still wants to render more tiles).
+	// If we were to block, the render loop wouldn't be able to read more tile data
+	// and the CPU would deadlock.
+	joystick := make(chan int, 1)
+	cpu, out := intcode.NewCPUForProgram(<-challenge.Lines(), joystick)
 	cpu.Memory[0] = 2
 
-	// TODO: Is there a way to keep input and output channels in sync without this hack?
-	cpu.UseFloatingInput(func() int {
-		return joystick
-	})
-
+	headless := viper.GetBool("headless")
 	term, err := tcell.NewScreen()
 	if err != nil {
 		panic(err)
 	}
 
-	if err := term.Init(); err != nil {
-		panic(err)
+	if !headless {
+		if err := term.Init(); err != nil {
+			panic(err)
+		}
+		term.DisableMouse()
+		defer term.Fini()
 	}
-	term.DisableMouse()
-	defer term.Fini()
 
 	bx := 0
-	px := math.MaxInt64
+	px := 0
 
 	term.Clear()
 	score := 0
@@ -57,17 +67,17 @@ func b(challenge *challenge.Input) int {
 	for {
 		x, ok := <-out
 		if !ok {
-			return score
+			break
 		}
 
 		y, ok := <-out
 		if !ok {
-			return score
+			break
 		}
 
 		tile, ok := <-out
 		if !ok {
-			return score
+			break
 		}
 
 		if x == -1 && y == 0 {
@@ -78,15 +88,12 @@ func b(challenge *challenge.Input) int {
 				term.SetContent(x, y, tcell.RuneBlock, nil, tcell.StyleDefault)
 			case tileBall:
 				bx = x
-
-				if px != math.MaxInt64 {
-					if bx < px {
-						joystick = positionLeft
-					} else if bx > px {
-						joystick = positionRight
-					} else {
-						joystick = positionNeutral
-					}
+				if bx < px {
+					joystick <- positionLeft
+				} else if bx > px {
+					joystick <- positionRight
+				} else {
+					joystick <- positionNeutral
 				}
 
 				term.SetContent(x, y, '0', nil, tcell.StyleDefault)
@@ -99,7 +106,9 @@ func b(challenge *challenge.Input) int {
 				term.SetContent(x, y, ' ', nil, tcell.StyleDefault)
 			}
 
-			term.Show()
+			if !headless {
+				term.Show()
+			}
 		}
 	}
 

@@ -16,14 +16,11 @@ const (
 	RAMSize = 8192
 )
 
-type floatingInputProvider func() int
-
 type CPU struct {
 	Memory []int
 
-	input         <-chan int
-	output        chan<- int
-	floatingInput floatingInputProvider
+	input  <-chan int
+	output chan<- int
 
 	pc             int
 	relativeOffset int
@@ -39,10 +36,6 @@ func NewCPUForProgram(program string, inputs <-chan int) (*CPU, <-chan int) {
 
 	output := make(chan int)
 	return &CPU{Memory: memory, input: inputs, output: output}, output
-}
-
-func (c *CPU) UseFloatingInput(p floatingInputProvider) {
-	c.floatingInput = p
 }
 
 func (c *CPU) Run() {
