@@ -90,7 +90,7 @@ func b(challenge *challenge.Input) int {
 			r := ' '
 			switch tile {
 			case tileBlock:
-				r = tcell.RuneBlock
+				r = '\u2588'
 			case tileBall:
 				bx = x
 				if bx < px {
@@ -101,12 +101,12 @@ func b(challenge *challenge.Input) int {
 					joystick <- positionNeutral
 				}
 
-				r = '0'
+				r = '\u25ef'
 			case tileHorizontalPaddle:
 				px = x
-				r = '\u2582'
+				r = '\u2015'
 			case tileWall:
-				r = '='
+				r = '\u2591'
 			}
 
 			term.SetContent(x, 1+y, r, nil, tcell.StyleDefault)
