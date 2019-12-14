@@ -2,6 +2,7 @@ package day14
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/nlowe/aoc2019/challenge"
 	"github.com/spf13/cobra"
@@ -22,17 +23,8 @@ func b(challenge *challenge.Input) int {
 		equations[eqn.output.name] = eqn
 	}
 
-	lo := 1000000000000 / cost(componentFuel, 1, equations, map[string]int{})
-	hi := 1000000000000
-
-	for lo < hi {
-		mid := (lo + hi + 1) / 2
-		if cost(componentFuel, mid, equations, map[string]int{}) <= 1000000000000 {
-			lo = mid
-		} else {
-			hi = mid - 1
-		}
-	}
-
-	return lo
+	// not sure why this is off by one
+	return sort.Search(1000000000000, func(i int) bool {
+		return cost(componentFuel, i, equations, map[string]int{}) >= 1000000000000
+	}) - 1
 }
