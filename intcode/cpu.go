@@ -1,8 +1,10 @@
 package intcode
 
 import (
+	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/nlowe/aoc2019/intcode/instruction"
 	"github.com/nlowe/aoc2019/util"
@@ -24,6 +26,11 @@ type CPU struct {
 
 	pc             int
 	relativeOffset int
+
+	ctx             context.Context
+	halt            context.CancelFunc
+	halted          bool
+	WatchdogTimeout time.Duration
 }
 
 func NewCPUForProgram(program string, inputs <-chan int) (*CPU, <-chan int) {
@@ -34,8 +41,22 @@ func NewCPUForProgram(program string, inputs <-chan int) (*CPU, <-chan int) {
 		memory[i] = util.MustAtoI(op)
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+
 	output := make(chan int)
-	return &CPU{Memory: memory, input: inputs, output: output}, output
+	return &CPU{
+		Memory:          memory,
+		input:           inputs,
+		output:          output,
+		ctx:             ctx,
+		halt:            cancel,
+		WatchdogTimeout: 5 * time.Second,
+	}, output
+}
+
+func (c *CPU) Halt() {
+	c.halted = true
+	c.halt()
 }
 
 func (c *CPU) Run() {
@@ -87,5 +108,5 @@ func (c *CPU) debugState() string {
 }
 
 func (c *CPU) IsHalted() bool {
-	return c.Memory[c.pc] == instruction.Halt
+	return c.halted || c.Memory[c.pc] == instruction.Halt
 }

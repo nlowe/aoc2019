@@ -23,14 +23,18 @@ var microcode = map[int]opFunc{
 		case v := <-c.input:
 			c.write(m1, 1, v)
 			return 1 + instruction.ArgCount(instruction.In)
-		case <-time.After(5 * time.Second):
+		case <-c.ctx.Done():
+			return 0
+		case <-time.After(c.WatchdogTimeout):
 			panic(fmt.Sprintf("no more input remaining after 5 seconds %s", c.debugState()))
 		}
 	},
 	instruction.Out: func(m3, m2, m1 int, c *CPU) int {
 		select {
 		case c.output <- c.read(m1, 1):
-		case <-time.After(5 * time.Second):
+		case <-c.ctx.Done():
+			return 0
+		case <-time.After(c.WatchdogTimeout):
 			panic(fmt.Sprintf("blocked on write for 5 seconds %s", c.debugState()))
 		}
 		return 1 + instruction.ArgCount(instruction.Out)
