@@ -83,3 +83,11 @@ func (s *ship) tileAt(x, y int) *tile {
 
 	return s.m[x][y]
 }
+
+func (s *ship) each(f func(t *tile)) {
+	for _, r := range s.m {
+		for _, t := range r {
+			f(t)
+		}
+	}
+}

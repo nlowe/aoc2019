@@ -73,7 +73,7 @@ func init() {
 		day12.A, day12.B,
 		day13.A, day13.B,
 		day14.A, day14.B,
-		day15.A,
+		day15.A, day15.B,
 	)
 
 	flags := rootCmd.PersistentFlags()
