@@ -4,18 +4,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nlowe/aoc2019/challenge/day16"
-
-	"github.com/nlowe/aoc2019/challenge/day15"
-
-	"github.com/nlowe/aoc2019/challenge/day14"
-
-	"github.com/nlowe/aoc2019/challenge/day13"
-
 	"github.com/nlowe/aoc2019/challenge/day1"
 	"github.com/nlowe/aoc2019/challenge/day10"
 	"github.com/nlowe/aoc2019/challenge/day11"
 	"github.com/nlowe/aoc2019/challenge/day12"
+	"github.com/nlowe/aoc2019/challenge/day13"
+	"github.com/nlowe/aoc2019/challenge/day14"
+	"github.com/nlowe/aoc2019/challenge/day15"
+	"github.com/nlowe/aoc2019/challenge/day16"
+	"github.com/nlowe/aoc2019/challenge/day17"
 	"github.com/nlowe/aoc2019/challenge/day2"
 	"github.com/nlowe/aoc2019/challenge/day3"
 	"github.com/nlowe/aoc2019/challenge/day4"
@@ -77,6 +74,7 @@ func init() {
 		day14.A, day14.B,
 		day15.A, day15.B,
 		day16.A, day16.B,
+		day17.A,
 	)
 
 	flags := rootCmd.PersistentFlags()
