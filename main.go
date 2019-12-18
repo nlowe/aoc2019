@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nlowe/aoc2019/challenge/day19"
-
 	"github.com/nlowe/aoc2019/challenge/day1"
 	"github.com/nlowe/aoc2019/challenge/day10"
 	"github.com/nlowe/aoc2019/challenge/day11"
@@ -15,6 +13,8 @@ import (
 	"github.com/nlowe/aoc2019/challenge/day15"
 	"github.com/nlowe/aoc2019/challenge/day16"
 	"github.com/nlowe/aoc2019/challenge/day17"
+	"github.com/nlowe/aoc2019/challenge/day18"
+	"github.com/nlowe/aoc2019/challenge/day19"
 	"github.com/nlowe/aoc2019/challenge/day2"
 	"github.com/nlowe/aoc2019/challenge/day3"
 	"github.com/nlowe/aoc2019/challenge/day4"
@@ -77,6 +77,7 @@ func init() {
 		day15.A, day15.B,
 		day16.A, day16.B,
 		day17.A, day17.B,
+		day18.A,
 		day19.A, day19.B,
 	)
 
