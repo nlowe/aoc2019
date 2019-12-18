@@ -28,7 +28,22 @@ const (
 )
 
 func a(challenge *challenge.Input) int {
-	cpu, out := intcode.NewCPUForProgram(<-challenge.Lines(), nil)
+	s, width, height := parseScaffolding(<-challenge.Lines())
+
+	alignment := 0
+	for x := 0; x <= width; x++ {
+		for y := 0; y <= height; y++ {
+			if s.isIntersection(x, y) {
+				alignment += s.get(x, y).alignment()
+			}
+		}
+	}
+
+	return alignment
+}
+
+func parseScaffolding(program string) (*scaffolding, int, int) {
+	cpu, out := intcode.NewCPUForProgram(program, nil)
 	go cpu.Run()
 
 	s := &scaffolding{m: map[int]map[int]*scaffold{}}
@@ -40,6 +55,12 @@ func a(challenge *challenge.Input) int {
 	x := 0
 	for i := range out {
 		if i == tileScaffolding || i == robotLeft || i == robotRight || i == robotUp || i == robotDown {
+			if i == robotLeft || i == robotRight || i == robotUp || i == robotDown {
+				s.robotX = x
+				s.robotY = y
+				s.robotFace = rune(i)
+			}
+
 			s.set(x, y)
 		} else if i == tileEmpty {
 			s.clear(x, y)
@@ -63,14 +84,5 @@ func a(challenge *challenge.Input) int {
 		}
 	}
 
-	alignment := 0
-	for x := 0; x <= width; x++ {
-		for y := 0; y <= height; y++ {
-			if s.isIntersection(x, y) {
-				alignment += s.get(x, y).alignment()
-			}
-		}
-	}
-
-	return alignment
+	return s, width, height
 }

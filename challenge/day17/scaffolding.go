@@ -12,6 +12,10 @@ func (s *scaffold) alignment() int {
 }
 
 type scaffolding struct {
+	robotX    int
+	robotY    int
+	robotFace rune
+
 	m map[int]map[int]*scaffold
 }
 
@@ -37,11 +41,7 @@ func (s *scaffolding) clear(x, y int) {
 	delete(s.m[x], y)
 }
 
-func (s *scaffolding) isIntersection(x, y int) bool {
-	if s.get(x, y) == nil {
-		return false
-	}
-
+func (s *scaffolding) neighbors(x, y int) (result []*scaffold) {
 	for _, delta := range []struct {
 		X int
 		Y int
@@ -51,14 +51,18 @@ func (s *scaffolding) isIntersection(x, y int) bool {
 		{0, -1},
 		{0, 1},
 	} {
-		if _, ok := s.m[x+delta.X]; !ok {
-			return false
-		}
-
-		if _, ok := s.m[x+delta.X][y+delta.Y]; !ok {
-			return false
+		if v := s.get(x+delta.X, y+delta.Y); v != nil {
+			result = append(result, v)
 		}
 	}
 
-	return true
+	return
+}
+
+func (s *scaffolding) isIntersection(x, y int) bool {
+	if s.get(x, y) == nil {
+		return false
+	}
+
+	return len(s.neighbors(x, y)) == 4
 }
