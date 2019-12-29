@@ -19,7 +19,7 @@ const (
 )
 
 type CPU struct {
-	Memory []int
+	Memory map[int]int
 
 	input  <-chan int
 	output chan<- int
@@ -35,7 +35,7 @@ type CPU struct {
 
 func NewCPUForProgram(program string, inputs <-chan int) (*CPU, <-chan int) {
 	parts := strings.Split(program, ",")
-	memory := make([]int, RAMSize)
+	memory := map[int]int{}
 
 	for i, op := range parts {
 		memory[i] = util.MustAtoI(op)

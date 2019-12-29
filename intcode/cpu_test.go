@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/magiconair/properties/assert"
+
 	"github.com/nlowe/aoc2019/intcode/input"
 	"github.com/nlowe/aoc2019/intcode/output"
 	"github.com/stretchr/testify/require"
@@ -42,7 +44,9 @@ func TestCPU_BasicOpCodes(t *testing.T) {
 			sut, _ := NewCPUForProgram(tt.input, nil)
 			sut.Run()
 
-			require.Equal(t, tt.expected, sut.Memory[:len(tt.expected)])
+			for i, v := range tt.expected {
+				assert.Equal(t, v, sut.Memory[i])
+			}
 		})
 	}
 }
@@ -51,7 +55,9 @@ func TestCPU_Indirection(t *testing.T) {
 	sut, _ := NewCPUForProgram("01101,4,1,0,99", nil)
 	sut.Run()
 
-	require.Equal(t, []int{5, 4, 1, 0, 99}, sut.Memory[:5])
+	for i, v := range []int{5, 4, 1, 0, 99} {
+		assert.Equal(t, v, sut.Memory[i])
+	}
 }
 
 func TestCPU_IO(t *testing.T) {
