@@ -77,7 +77,7 @@ func init() {
 		day15.A, day15.B,
 		day16.A, day16.B,
 		day17.A, day17.B,
-		day18.A,
+		day18.A, day18.B,
 		day19.A, day19.B,
 	)
 

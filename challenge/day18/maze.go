@@ -78,6 +78,9 @@ type maze struct {
 
 	startX int
 	startY int
+
+	sx int
+	sy int
 }
 
 func ParseMaze(challenge *challenge.Input) *maze {
@@ -109,9 +112,11 @@ func ParseMaze(challenge *challenge.Input) *maze {
 			x++
 		}
 
+		result.sx = x - 1
 		y++
 	}
 
+	result.sy = y - 1
 	return result
 }
 
