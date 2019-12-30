@@ -14,6 +14,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/nlowe/aoc2019/util"
 	"github.com/zellyn/kooky"
 )
 
@@ -79,7 +80,11 @@ func main() {
 		abort(fmt.Errorf("unknown problem segment: %s", ab))
 	}
 
-	p := pkgPath(n)
+	p, err := util.PkgPath(n)
+	if err != nil {
+		abort(err)
+	}
+
 	if err := os.MkdirAll(p, 0744); err != nil {
 		abort(err)
 	}
@@ -195,15 +200,6 @@ func mustClose(c io.Closer) {
 	if err := c.Close(); err != nil {
 		panic(fmt.Errorf("error closing io.Closer: %w", err))
 	}
-}
-
-func pkgPath(day int) string {
-	_, filename, _, ok := runtime.Caller(1)
-	if !ok {
-		abort(fmt.Errorf("failed to generate package path"))
-	}
-
-	return filepath.Join(filepath.Dir(filepath.Dir(filename)), "challenge", fmt.Sprintf("day%d", day))
 }
 
 func abort(err error) {

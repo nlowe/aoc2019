@@ -23,76 +23,53 @@ const (
 	instrDealWithIncrement = "deal with increment "
 )
 
-var deckSize = 10007
-
 func a(challenge *challenge.Input) int {
-	deck := fancyShuffle(challenge)
-
-	for i, v := range deck {
-		if v == 2019 {
-			return i
-		}
-	}
-
-	panic("no solution")
+	return fastFancyShuffle(challenge, 10007, 2019)
 }
 
-func fancyShuffle(challenge *challenge.Input) []int {
-	deck := make([]int, deckSize)
-	for i := range deck {
-		deck[i] = i
-	}
+func fastFancyShuffle(challenge *challenge.Input, deckSize, pos int) int {
+	x := pos
 
 	for instruction := range challenge.Lines() {
 		if instruction == instrDealNewStack {
-			deck = dealIntoNewStack(deck)
+			x = fastNewStack(deckSize, x)
 		} else if strings.HasPrefix(instruction, instrCut) {
 			n, err := strconv.Atoi(strings.TrimPrefix(instruction, instrCut))
 			if err != nil {
 				panic(err)
 			}
 
-			deck = cut(deck, n)
+			x = fastCut(deckSize, x, n)
 		} else if strings.HasPrefix(instruction, instrDealWithIncrement) {
 			increment, err := strconv.Atoi(strings.TrimPrefix(instruction, instrDealWithIncrement))
 			if err != nil {
 				panic(err)
 			}
 
-			deck = dealWithIncrement(deck, increment)
+			x = fastIncrement(deckSize, x, increment)
 		}
 	}
 
-	return deck
+	return x
 }
 
-func dealIntoNewStack(deck []int) []int {
-	newStack := make([]int, len(deck))
-	for i, v := range deck {
-		newStack[len(newStack)-i-1] = v
-	}
-
-	return newStack
+func fastNewStack(deckSize, x int) int {
+	return safeMod(-x-1, deckSize)
 }
 
-func cut(deck []int, n int) []int {
-	newStack := make([]int, len(deck))
-	for i := range deck {
-		if n > 0 {
-			newStack[i] = deck[(n+i)%len(deck)]
-		} else {
-			newStack[i] = deck[(len(deck)+i+n)%len(deck)]
-		}
-	}
-
-	return newStack
+func fastCut(deckSize, x, n int) int {
+	return safeMod(x-n, deckSize)
 }
 
-func dealWithIncrement(deck []int, increment int) []int {
-	newStack := make([]int, len(deck))
-	for i := range deck {
-		newStack[(i*increment)%len(deck)] = deck[i]
+func fastIncrement(deckSize, x, increment int) int {
+	return safeMod(x*increment, deckSize)
+}
+
+func safeMod(d, m int) int {
+	res := d % m
+	if (res < 0 && m > 0) || (res > 0 && m < 0) {
+		return res + m
 	}
 
-	return newStack
+	return res
 }
