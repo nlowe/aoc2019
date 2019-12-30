@@ -15,8 +15,7 @@ func TestFastFancyShuffleA(t *testing.T) {
 	viper.Set("input", day22input())
 	defer viper.Set("input", "")
 
-	iterations = 1
-	require.Equal(t, 3293, fastFancyShuffle(challenge.FromFile(), 10007, 2019))
+	require.Equal(t, 3293, a(challenge.FromFile()))
 }
 
 func day22input() string {

@@ -23,46 +23,49 @@ const (
 	instrDealWithIncrement = "deal with increment "
 )
 
-func a(challenge *challenge.Input) int {
-	return fastFancyShuffle(challenge, 10007, 2019)
+type strategy struct {
+	a int
+	b int
 }
 
-func fastFancyShuffle(challenge *challenge.Input, deckSize, pos int) int {
-	x := pos
+func (s strategy) compose(other strategy, mod int) strategy {
+	return strategy{
+		a: safeMod(s.a*other.a, mod),
+		b: safeMod(s.b*other.a+other.b, mod),
+	}
+}
 
+func (s strategy) apply(x, mod int) int {
+	return safeMod(s.a*x+s.b, mod)
+}
+
+func a(challenge *challenge.Input) int {
+	return parseInstructions(challenge, 10007).apply(2019, 10007)
+}
+
+func parseInstructions(challenge *challenge.Input, deckSize int) strategy {
+	f := strategy{a: 1, b: 0}
 	for instruction := range challenge.Lines() {
 		if instruction == instrDealNewStack {
-			x = fastNewStack(deckSize, x)
+			f = f.compose(strategy{a: -1, b: -1}, deckSize)
 		} else if strings.HasPrefix(instruction, instrCut) {
 			n, err := strconv.Atoi(strings.TrimPrefix(instruction, instrCut))
 			if err != nil {
 				panic(err)
 			}
 
-			x = fastCut(deckSize, x, n)
+			f = f.compose(strategy{a: 1, b: -1 * n}, deckSize)
 		} else if strings.HasPrefix(instruction, instrDealWithIncrement) {
 			increment, err := strconv.Atoi(strings.TrimPrefix(instruction, instrDealWithIncrement))
 			if err != nil {
 				panic(err)
 			}
 
-			x = fastIncrement(deckSize, x, increment)
+			f = f.compose(strategy{a: increment, b: 0}, deckSize)
 		}
 	}
 
-	return x
-}
-
-func fastNewStack(deckSize, x int) int {
-	return safeMod(-x-1, deckSize)
-}
-
-func fastCut(deckSize, x, n int) int {
-	return safeMod(x-n, deckSize)
-}
-
-func fastIncrement(deckSize, x, increment int) int {
-	return safeMod(x*increment, deckSize)
+	return f
 }
 
 func safeMod(d, m int) int {

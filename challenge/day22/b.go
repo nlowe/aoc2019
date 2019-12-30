@@ -15,10 +15,6 @@ var B = &cobra.Command{
 	},
 }
 
-var (
-	iterations = 101741582076661
-)
-
 func b(challenge *challenge.Input) int {
-	return fastFancyShuffle(challenge, 119315717514047, 2020)
+	return 0
 }
