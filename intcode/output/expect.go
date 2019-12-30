@@ -27,8 +27,10 @@ func Expect(t *testing.T, outputs <-chan int, expected ...int) *sync.WaitGroup {
 	wg.Add(1)
 
 	go func() {
+		i := 0
 		for v := range outputs {
-			assert.Equal(t, expected[0], v)
+			assert.Equal(t, expected[i], v)
+			i++
 		}
 		wg.Done()
 	}()
