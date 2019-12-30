@@ -2,6 +2,7 @@ package day20
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/beefsack/go-astar"
 	"github.com/nlowe/aoc2019/challenge"
@@ -14,11 +15,16 @@ const (
 
 	gateStart = 'A'
 	gateEnd   = 'Z'
+
+	// TODO: Re-size the z level dynamically. 128 works for my input and the tests
+	//       but may not work for other inputs.
+	maxLevels = 128
 )
 
 type tile struct {
 	x int
 	y int
+	z int
 	r rune
 
 	gateExit *tile
@@ -26,11 +32,15 @@ type tile struct {
 }
 
 func (t *tile) String() string {
-	return fmt.Sprintf("%s {%d,%d}", string(t.r), t.x, t.y)
+	return fmt.Sprintf("%s {%d,%d,%d}", string(t.r), t.x, t.y, t.z)
 }
 
 func (t *tile) isGate() bool {
 	return t.r >= 'A' && t.r <= 'Z'
+}
+
+func (t *tile) isInnerGate() bool {
+	return t.isGate() && t.x > 3 && t.x < (t.d.sx-3) && t.y > 3 && t.y < (t.d.sy-3)
 }
 
 func (t *tile) directNeighbors() (result []*tile) {
@@ -43,7 +53,7 @@ func (t *tile) directNeighbors() (result []*tile) {
 		{0, -1},
 		{0, 1},
 	} {
-		if other := t.d.tileAt(t.x+delta.x, t.y+delta.y); other != nil {
+		if other := t.d.tileAt(t.x+delta.x, t.y+delta.y, t.z); other != nil {
 			result = append(result, other)
 		}
 	}
@@ -64,7 +74,23 @@ func (t *tile) PathNeighbors() (result []astar.Pather) {
 		}
 
 		if other.isGate() && other.gateExit != nil {
-			result = append(result, other.gateExit)
+			exit := other.gateExit
+			if t.d.gatesChangeLevels {
+				if other.z == 0 && !other.isInnerGate() {
+					// Outer gates on level 0 are walls
+					continue
+				}
+
+				if other.isInnerGate() {
+					// inner portal, go up
+					exit = t.d.tileAt(exit.x, exit.y, exit.z+1)
+				} else {
+					// outer portal, go down
+					exit = t.d.tileAt(exit.x, exit.y, exit.z-1)
+				}
+			}
+
+			result = append(result, exit)
 		} else {
 			result = append(result, other)
 		}
@@ -77,55 +103,85 @@ func (t *tile) PathNeighborCost(_ astar.Pather) float64 {
 	return 1.0
 }
 
-func (t *tile) PathEstimatedCost(_ astar.Pather) float64 {
+func (t *tile) PathEstimatedCost(to astar.Pather) float64 {
 	// TODO: Figure out a good cost estimate. If we just use manhattan distance
 	//       like in other days, gates that are "far" away may not be taken even
 	//       though the path **through** them is shorter. By hard-coding this to
 	//       1 we're essentially forcing A* to operate as Dijkstra instead.
-	return 1.0
+	other := to.(*tile)
+	return math.Max(0, float64(other.z-1)*64.0)
 }
 
 type donut struct {
-	d map[int]map[int]*tile
+	d map[int]map[int]map[int]*tile
+
+	sx int
+	sy int
 
 	start *tile
 	end   *tile
+
+	gatesChangeLevels bool
 }
 
-func (d *donut) set(x, y int, r rune) {
+func (d *donut) set(x, y, z int, r rune) {
 	if _, ok := d.d[x]; !ok {
-		d.d[x] = map[int]*tile{}
+		d.d[x] = map[int]map[int]*tile{}
 	}
-	d.d[x][y] = &tile{x, y, r, nil, d}
+
+	if _, ok := d.d[x][y]; !ok {
+		d.d[x][y] = map[int]*tile{}
+	}
+
+	if x > d.sx {
+		d.sx = x
+	}
+
+	if y > d.sy {
+		d.sy = y
+	}
+
+	d.d[x][y][z] = &tile{x, y, z, r, nil, d}
 }
 
-func (d *donut) tileAt(x, y int) *tile {
+func (d *donut) tileAt(x, y, z int) *tile {
+	if z >= maxLevels {
+		panic(fmt.Errorf("tried to access tile at {%d,%d} past max level of %d", x, y, maxLevels))
+	}
+
 	if _, ok := d.d[x]; !ok {
 		return nil
 	}
 
-	return d.d[x][y]
+	if _, ok := d.d[x][y]; !ok {
+		return nil
+	}
+
+	return d.d[x][y][z]
 }
 
 func NewDonut(challenge *challenge.Input) *donut {
-	result := &donut{d: map[int]map[int]*tile{}}
+	result := &donut{d: map[int]map[int]map[int]*tile{}}
 	var startCandidates, endCandidates, gates []*tile
 
 	y := 1
 	for line := range challenge.Lines() {
 		x := 1
 		for _, r := range line {
-			result.set(x, y, r)
-			t := result.tileAt(x, y)
+			for z := 0; z < maxLevels; z++ {
+				result.set(x, y, z, r)
 
-			if r == 'A' {
-				startCandidates = append(startCandidates, t)
-			} else if r == 'Z' {
-				endCandidates = append(endCandidates, t)
-			}
+				t := result.tileAt(x, y, z)
 
-			if t.isGate() {
-				gates = append(gates, t)
+				if r == 'A' {
+					startCandidates = append(startCandidates, t)
+				} else if r == 'Z' {
+					endCandidates = append(endCandidates, t)
+				}
+
+				if t.isGate() {
+					gates = append(gates, t)
+				}
 			}
 
 			x++
@@ -165,7 +221,6 @@ func findStartOrEnd(entranceCandidates []*tile, search rune) *tile {
 }
 
 func wireGates(gates []*tile) {
-	fmt.Printf("Have %d partial gates to wire up\n", len(gates))
 	for _, a := range gates {
 		want := a.d.gatePair(a)
 		if want == nil {
@@ -173,7 +228,7 @@ func wireGates(gates []*tile) {
 		}
 
 		for _, b := range gates {
-			if b == a || b == want || b.r != a.r {
+			if b == a || b == want || b.r != a.r || b.z != a.z {
 				continue
 			}
 
@@ -194,9 +249,9 @@ func wireGates(gates []*tile) {
 }
 
 func (d *donut) gatePair(g *tile) *tile {
-	want := g.d.tileAt(g.x, g.y+1)
+	want := g.d.tileAt(g.x, g.y+1, g.z)
 	if want == nil || !want.isGate() || g.r == want.r {
-		want = g.d.tileAt(g.x+1, g.y)
+		want = g.d.tileAt(g.x+1, g.y, g.z)
 		if want == nil || !want.isGate() || g.r == want.r {
 			return nil
 		}
