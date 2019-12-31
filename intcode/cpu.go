@@ -106,7 +106,7 @@ func (c *CPU) write(mode, offset, value int) {
 
 func (c *CPU) debugState() string {
 	view := strings.Builder{}
-	view.WriteString("...")
+	view.WriteString("... ")
 
 	for i := c.pc - 10; i < c.pc+10; i++ {
 		if i == c.pc {

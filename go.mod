@@ -20,6 +20,7 @@ require (
 	github.com/stretchr/testify v1.4.0
 	github.com/zalando/go-keyring v0.0.0-20191212171435-ac5f1d08068b // indirect
 	github.com/zellyn/kooky v0.0.0-20190514172626-f2bb24889ec7
+	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9 // indirect
 	golang.org/x/text v0.3.2 // indirect
 	gopkg.in/yaml.v2 v2.2.7 // indirect

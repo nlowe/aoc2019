@@ -23,6 +23,11 @@ const (
 )
 
 func a(challenge *challenge.Input) int {
+	inputs, outputs := bootNetwork(challenge)
+	return <-NewRouter(inputs, outputs).RouteTraffic()
+}
+
+func bootNetwork(challenge *challenge.Input) ([]chan int, []<-chan int) {
 	program := <-challenge.Lines()
 	computers := make([]*intcode.CPU, networkSize)
 	inputs := make([]chan int, networkSize)
@@ -37,7 +42,7 @@ func a(challenge *challenge.Input) int {
 
 		go func(i int) {
 			// Boot the nic and assign the ID
-			fmt.Printf("[%2d] booting...\n", i)
+			fmt.Printf("[%3d] booting...\n", i)
 			go computers[i].Run()
 			inputs[i] <- i
 			startup.Done()
@@ -45,6 +50,5 @@ func a(challenge *challenge.Input) int {
 	}
 
 	startup.Wait()
-
-	return <-NewRouter(inputs, outputs).RouteTraffic()
+	return inputs, outputs
 }
