@@ -3,6 +3,7 @@ package intcode
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -104,7 +105,20 @@ func (c *CPU) write(mode, offset, value int) {
 }
 
 func (c *CPU) debugState() string {
-	return fmt.Sprintf("[Op: %05d, PC: %d] (Memory: %+v)", c.Memory[c.pc], c.pc, c.Memory)
+	view := strings.Builder{}
+	view.WriteString("...")
+
+	for i := c.pc - 10; i < c.pc+10; i++ {
+		if i == c.pc {
+			view.WriteString("*")
+		}
+		view.WriteString(strconv.Itoa(c.Memory[i]))
+		view.WriteString(" ")
+	}
+
+	view.WriteString("...")
+
+	return fmt.Sprintf("[Op: %05d, PC: %d] (Memory: [%s])", c.Memory[c.pc], c.pc, view.String())
 }
 
 func (c *CPU) IsHalted() bool {

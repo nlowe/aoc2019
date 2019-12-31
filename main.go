@@ -19,6 +19,7 @@ import (
 	"github.com/nlowe/aoc2019/challenge/day20"
 	"github.com/nlowe/aoc2019/challenge/day21"
 	"github.com/nlowe/aoc2019/challenge/day22"
+	"github.com/nlowe/aoc2019/challenge/day23"
 	"github.com/nlowe/aoc2019/challenge/day3"
 	"github.com/nlowe/aoc2019/challenge/day4"
 	"github.com/nlowe/aoc2019/challenge/day5"
@@ -85,6 +86,7 @@ func init() {
 		day20.A, day20.B,
 		day21.A, day21.B,
 		day22.A, day22.B,
+		day23.A,
 	)
 
 	flags := rootCmd.PersistentFlags()
