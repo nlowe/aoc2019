@@ -2,6 +2,7 @@ package day24
 
 import (
 	"fmt"
+	"math/bits"
 
 	"github.com/nlowe/aoc2019/challenge"
 )
@@ -14,8 +15,19 @@ const (
 	tileBug   = '#'
 )
 
+const (
+	directionNorth int = iota
+	directionEast
+	directionSouth
+	directionWest
+)
+
 type world struct {
-	m [][]bool
+	active [][]bool
+	next   [][]bool
+
+	outerRecursiveCounter func(direction int) int
+	innerRecursiveCounter func(direction int) int
 }
 
 func emptyWorld() [][]bool {
@@ -27,14 +39,18 @@ func emptyWorld() [][]bool {
 	return m
 }
 
+func NewEmptyWorld() *world {
+	return &world{active: emptyWorld(), next: emptyWorld()}
+}
+
 func NewWorld(challenge *challenge.Input) *world {
-	result := &world{m: emptyWorld()}
+	result := NewEmptyWorld()
 
 	y := 0
 	for row := range challenge.Lines() {
 		for x, c := range row {
 			if c == tileBug {
-				result.m[x][y] = true
+				result.active[x][y] = true
 			}
 		}
 
@@ -58,10 +74,30 @@ func (w *world) countNeighbors(x, y int) (result int) {
 		dy := y + delta.y
 
 		if dx < 0 || dx >= width || dy < 0 || dy >= height {
-			continue
-		}
+			if w.outerRecursiveCounter == nil {
+				continue
+			}
 
-		if w.m[dx][dy] {
+			if delta.x == -1 {
+				result += w.outerRecursiveCounter(directionWest)
+			} else if delta.x == 1 {
+				result += w.outerRecursiveCounter(directionEast)
+			} else if delta.y == -1 {
+				result += w.outerRecursiveCounter(directionNorth)
+			} else {
+				result += w.outerRecursiveCounter(directionSouth)
+			}
+		} else if dx == width/2 && dy == height/2 && w.innerRecursiveCounter != nil {
+			if delta.x == -1 {
+				result += w.innerRecursiveCounter(directionEast)
+			} else if delta.x == 1 {
+				result += w.innerRecursiveCounter(directionWest)
+			} else if delta.y == -1 {
+				result += w.innerRecursiveCounter(directionSouth)
+			} else {
+				result += w.innerRecursiveCounter(directionNorth)
+			}
+		} else if w.active[dx][dy] {
 			result++
 		}
 	}
@@ -70,21 +106,29 @@ func (w *world) countNeighbors(x, y int) (result int) {
 }
 
 func (w *world) tick() {
-	next := emptyWorld()
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
-			next[x][y] = w.m[x][y]
+			if w.innerRecursiveCounter != nil &&
+				w.outerRecursiveCounter != nil &&
+				x == width/2 && y == height/2 {
+				continue
+			}
+
+			w.next[x][y] = w.active[x][y]
 
 			n := w.countNeighbors(x, y)
-			if w.m[x][y] && n != 1 {
-				next[x][y] = false
-			} else if !w.m[x][y] && (n == 1 || n == 2) {
-				next[x][y] = true
+			if w.active[x][y] && n != 1 {
+				w.next[x][y] = false
+			} else if !w.active[x][y] && (n == 1 || n == 2) {
+				w.next[x][y] = true
 			}
 		}
 	}
+}
 
-	w.m = next
+func (w *world) swap() {
+	w.active = w.next
+	w.next = emptyWorld()
 }
 
 func (w *world) biodiversity() int {
@@ -92,7 +136,7 @@ func (w *world) biodiversity() int {
 	biodiversity := 0
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
-			if w.m[x][y] {
+			if w.active[x][y] {
 				biodiversity += pow
 			}
 			pow <<= 1
@@ -102,10 +146,18 @@ func (w *world) biodiversity() int {
 	return biodiversity
 }
 
+func (w *world) count() int {
+	return bits.OnesCount32(uint32(w.biodiversity()))
+}
+
 func (w *world) dump() {
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
-			if w.m[x][y] {
+			if w.innerRecursiveCounter != nil &&
+				w.outerRecursiveCounter != nil &&
+				x == width/2 && y == height/2 {
+				fmt.Print("?")
+			} else if w.active[x][y] {
 				fmt.Print(string(tileBug))
 			} else {
 				fmt.Print(string(tileEmpty))

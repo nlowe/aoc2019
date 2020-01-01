@@ -23,6 +23,7 @@ func a(challenge *challenge.Input) int {
 	}
 	for {
 		w.tick()
+		w.swap()
 		d := w.biodiversity()
 
 		if _, ok := seen[d]; ok {
