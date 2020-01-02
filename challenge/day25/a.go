@@ -15,8 +15,10 @@ import (
 )
 
 var A = &cobra.Command{
-	Use:   "25a",
-	Short: "Day 25, Problem A",
+	Use: "25a",
+	// Day 25 only has a single part
+	Aliases: []string{"25", "25b"},
+	Short:   "Day 25, Problem A",
 	Run: func(_ *cobra.Command, _ []string) {
 		fmt.Printf("Answer: %d\n", a(challenge.FromFile()))
 	},
